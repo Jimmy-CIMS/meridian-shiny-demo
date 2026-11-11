@@ -1,0 +1,19 @@
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+.Renviron
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+rsconnect/
+coverage/
+artifacts/
+.agents/
+.codex/
+.aws/
+
+# Alternate Git metadata for restricted development environments
+.git-local/

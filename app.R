@@ -1,0 +1,7 @@
+library(shiny)
+source('R/data.R', local=TRUE)
+source('R/analytics.R', local=TRUE)
+source('R/ui.R', local=TRUE)
+source('R/server.R', local=TRUE)
+orders <- make_demo_data()
+shinyApp(ui=app_ui, server=app_server)

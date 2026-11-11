@@ -1,0 +1,52 @@
+icon_svg <- function(name) {
+  paths <- list(grid='<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    chart='<path d="M4 20h17M7 16V9m5 7V4m5 12v-5"/>',
+    people='<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v2"/>',
+    sliders='<path d="M4 7h5m4 0h7M4 17h10m4 0h2"/><circle cx="11" cy="7" r="2"/><circle cx="16" cy="17" r="2"/>',
+    file='<path d="M14 3H5v18h14V8zM14 3v6h5M8 13h8m-8 4h6"/>')
+  HTML(paste0('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">',paths[[name]],'</svg>'))
+}
+nav_item <- function(id,label,icon,number) tags$button(type='button',class=paste('nav-item',if(id=='overview') 'active'),`data-page`=id,icon_svg(icon),tags$span(label),tags$small(number))
+chart_box <- function(id,title,subtitle,height=260,extra=NULL) tags$section(class='panel',tags$div(class='panel-heading',tags$div(tags$h3(title),tags$p(subtitle)),extra),tags$div(id=id,class='chart',style=paste0('height:',height,'px'),role='group',`aria-label`=title,tabindex='0'))
+page_heading <- function(eyebrow,title,description) tags$div(class='page-heading',tags$div(tags$div(class='eyebrow',eyebrow),tags$h1(title),tags$p(description)),tags$div(class='live-badge',tags$span(class='status-dot'),'2025 dataset'))
+app_ui <- fluidPage(
+  theme=bslib::bs_theme(version=5,primary='#d65c35',base_font='sans-serif'),
+  tags$head(tags$title('Meridian — Retail Intelligence'),tags$meta(name='viewport',content='width=device-width, initial-scale=1'),tags$link(rel='stylesheet',href='app.css'),tags$script(src='app.js',defer=NA)),
+  tags$div(class='app-shell',
+    tags$aside(class='sidebar',
+      tags$a(class='brand',href='#',`aria-label`='Meridian home',tags$span(class='brand-mark','m'),tags$span('meridian',tags$small('RETAIL INTELLIGENCE'))),
+      tags$div(class='workspace',tags$span(class='workspace-icon','M'),tags$div(tags$strong('Meridian Studio'),tags$small('Demo workspace')),tags$span(class='workspace-tag','DEMO')),
+      tags$div(class='nav-label','WORKSPACE'),
+      tags$nav(`aria-label`='Main navigation',nav_item('overview','Overview','grid','01'),nav_item('explore','Sales explorer','chart','02'),nav_item('customers','Customer insights','people','03'),nav_item('scenario','Scenario lab','sliders','04'),nav_item('reports','Report center','file','05')),
+      tags$div(class='sidebar-bottom',tags$div(class='demo-note',tags$span(class='tiny-label','BUILT TO EXPLORE'),tags$h4('A little curiosity.\nA lot of possibility.'),tags$p('Explore a year of retail, one insight at a time.'),tags$span('Powered by R Shiny',class='powered')),
+        tags$div(class='profile',tags$span(class='avatar','JD'),tags$div(tags$strong('Jamie Davis'),tags$small('Demo analyst')),tags$span(class='profile-status','●')))),
+    tags$div(class='main-shell',
+      tags$header(class='topbar',tags$div(class='breadcrumb','Workspace',tags$span('/'),tags$strong(id='breadcrumb-page','Overview')),tags$div(class='topbar-actions',tags$span(class='synthetic-label','Synthetic data'),tags$button(id='theme-toggle',type='button',class='icon-button',`aria-label`='Switch to dark theme','◐'),selectInput('view_mode',NULL,c('Analyst view'='analyst','Executive view'='executive','Presentation view'='presentation'),width='165px',selectize=FALSE))),
+      tags$nav(class='presentation-nav',`aria-label`='Presentation navigation',nav_item('overview','Overview','grid','01'),nav_item('explore','Sales explorer','chart','02'),nav_item('customers','Customer insights','people','03'),nav_item('scenario','Scenario lab','sliders','04'),nav_item('reports','Report center','file','05')),
+      tags$main(id='main-content',
+        tags$div(class='global-filters',tags$div(class='filter-caption','YOUR PERSPECTIVE',tags$small('Every chart, in sync.')),
+          dateRangeInput('dates','Date range',start='2025-01-01',end='2025-12-31',min='2025-01-01',max='2025-12-31',format='M d, yyyy',separator=' → '),
+          selectInput('region','Region',c('All regions','North America','Europe','Asia Pacific','Latin America')),
+          selectInput('channel','Channel',c('All channels','Online store','Retail stores','Marketplace')),
+          actionButton('reset','Reset',class='reset-button')),
+        tags$section(id='page-overview',class='page active',
+          page_heading('THE BIG PICTURE','Good things are growing.','Your business at a glance. Find the signal, then follow it.'),
+          uiOutput('overview_kpis'),
+          tags$div(class='chart-grid main-grid',chart_box('revenue-chart','Revenue over time','Monthly revenue and gross profit',290),
+            tags$section(class='insight-panel',tags$div(class='tiny-label','THE MERIDIAN PERSPECTIVE'),tags$div(class='insight-art',HTML('↗')),uiOutput('insight'),actionButton('open_explore','Explore your sales  →',class='insight-button'))),
+          tags$div(class='chart-grid thirds',chart_box('category-chart','The product mix','Click a category to explore its sales',245),chart_box('channel-chart','Where customers shop','Revenue share by sales channel',245),chart_box('region-chart','Across the map','Revenue by region · click to filter',245))),
+        tags$section(id='page-explore',class='page',page_heading('FOLLOW THE SIGNAL','A closer look at sales.','Discover the products, places, and patterns behind your performance.'),
+          tags$div(class='local-toolbar',selectInput('category','Product category',c('All categories','Home & living','Apparel','Beauty','Accessories')),radioButtons('metric','Chart metric',c('Revenue'='revenue','Units sold'='units'),inline=TRUE),tags$span(class='helper','Tip: select a category in the overview to drill into sales.')),
+          tags$div(class='chart-grid main-grid',chart_box('sales-chart','Sales momentum','Monthly performance for your selection',300),chart_box('product-chart','Category performance','Compare your selected metric',300)),
+          chart_box('weekday-chart','The weekly rhythm','Order count by month and day of week',290),uiOutput('explore_summary')),
+        tags$section(id='page-customers',class='page',page_heading('PEOPLE BEHIND THE PURCHASES','Know your customers.','Understand purchase habits and find your next opportunity.'),uiOutput('customer_kpis'),
+          tags$div(class='chart-grid main-grid',chart_box('customer-chart','The loyalty landscape','Each dot is a customer · order count vs. total spend',310),chart_box('segment-chart','Relationships that matter','Customer segments based on orders in the selected period',310)),
+          chart_box('cohort-chart','Do they come back?','Observed customer retention · cohorts begin at first purchase within the filtered data',330)),
+        tags$section(id='page-scenario',class='page',page_heading('WHAT IF, MADE TANGIBLE','Make your next move.','Try a different strategy. See how the numbers could change.'),
+          tags$div(class='scenario-layout',tags$section(class='panel scenario-controls',tags$div(class='tiny-label','YOUR EXPERIMENT'),tags$h3('Small shifts. Big possibilities.'),sliderInput('price','Price adjustment',min=-20,max=30,value=0,step=1,post='%'),sliderInput('discount','Promotional discount',min=0,max=30,value=0,step=1,post='%'),sliderInput('marketing','Marketing budget increase',min=0,max=100,value=0,step=5,post='%'),sliderInput('elasticity','Demand sensitivity',min=.5,max=2,value=1.2,step=.1),actionButton('reset_scenario','Reset experiment',class='reset-button'),tags$details(tags$summary('How this model works'),tags$p('A transparent illustrative model, not a forecast. Demand changes with effective price and marketing. A 100% marketing increase adds spend equal to 8% of baseline revenue and lifts demand by 35%. Unit costs remain constant. All calculations use the globally filtered orders.'))),
+            tags$div(uiOutput('scenario_kpis'),chart_box('scenario-chart','Your possible trajectory','Illustrative monthly revenue · baseline vs. scenario',300),uiOutput('scenario_note')))),
+        tags$section(id='page-reports',class='page',page_heading('FROM INSIGHT TO ACTION','Take the story with you.','Search your orders, inspect the details, and export your selection.'),
+          tags$section(class='panel',tags$div(class='report-toolbar',textInput('search',NULL,placeholder='Search order, customer, category, or region…'),selectInput('sort','Sort by',c('Newest first'='newest','Revenue: high to low'='revenue','Oldest first'='oldest')),downloadButton('download_orders','Export orders',class='export-button')),tags$div(class='table-scroll',uiOutput('orders_table')),tags$div(class='table-footer',textOutput('table_count'),tags$div(actionButton('previous','← Previous',class='reset-button'),textOutput('page_number',inline=TRUE),actionButton('next_page','Next →',class='reset-button')))),
+          tags$div(class='report-notes',tags$div(tags$h3('Your data, your next step.'),tags$p('The CSV includes all matching rows, with your filters and search applied.')),downloadButton('download_summary','Download monthly summary',class='summary-download'))),
+        tags$footer(class='app-footer',tags$span('MERIDIAN',tags$span(' / A clearer view of your business.')),tags$span('Interactive demo · Synthetic 2025 data')))),
+    tags$div(id='chart-tooltip',class='chart-tooltip',role='tooltip'),tags$div(id='app-status',role='status',`aria-live`='polite',class='sr-only')))

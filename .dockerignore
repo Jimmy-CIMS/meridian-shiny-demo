@@ -1,0 +1,13 @@
+.git
+.git-local
+.github
+.agents
+.codex
+.aws
+.Rproj.user
+.Rhistory
+.RData
+.Renviron
+.env
+.env.*
+artifacts

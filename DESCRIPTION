@@ -1,0 +1,14 @@
+Package: meridianRetailDemo
+Title: Meridian Retail Intelligence Shiny Demo
+Version: 1.0.0
+Authors@R: person("Meridian", "Contributors", role = c("aut", "cre"), email = "maintainers@example.com")
+Description: An interactive retail analytics demonstration with synchronized filters,
+    customer insights, scenario modeling, accessible SVG charts, and CSV exports.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports:
+    shiny (>= 1.10.0),
+    bslib (>= 0.9.0)
+Suggests:
+    testthat (>= 3.0.0)
